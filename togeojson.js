@@ -47,8 +47,10 @@ toGeoJSON = (function() {
     }
     function coordPair(x) {
         var ll = [attrf(x, 'lon'), attrf(x, 'lat')],
-            ele = get1(x, 'ele');
+            ele = get1(x, 'ele'),
+            time = get1(x, 'time');
         if (ele) ll.push(parseFloat(nodeVal(ele)));
+        if (time) ll.push(nodeVal(time));
         return ll;
     }
 
@@ -238,13 +240,18 @@ toGeoJSON = (function() {
             function getTrack(node) {
                 var segments = get(node, 'trkseg'), track = [];
                 for (var i = 0; i < segments.length; i++) {
-                    track.push(getPoints(segments[i], 'trkpt'));
+                    var pts = getPoints(segments[i], 'trkpt');
+                    for (var j = 0; j < pts.length; j++) {
+                      track.push(pts[j]);
+                    }
+                    //track.push(getPoints(segments[i], 'trkpt'));
                 }
                 return {
                     type: 'Feature',
                     properties: getProperties(node),
                     geometry: {
-                        type: track.length === 1 ? 'LineString' : 'MultiLineString',
+                        type: typeof track[0][0] == 'number' ? 'LineString' : 'MultiLineString',
+                        //type: track.length === 1 ? 'LineString' : 'MultiLineString',
                         coordinates: track.length === 1 ? track[0] : track
                     }
                 };
